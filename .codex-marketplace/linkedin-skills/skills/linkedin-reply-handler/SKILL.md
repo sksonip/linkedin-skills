@@ -36,7 +36,7 @@ A LinkedIn URL containing `commentUrn=urn:li:comment:(activity:POST,COMMENT_ID)`
 4. **Draft the reply.** Follow the engagement templates in `references/reply-templates.md`. If the counterpart asked a question, answer it directly. If they pushed back, concede then sharpen.
 5. **Humanizer pass.** Scrub 2026 AI vocab by density, cap em dashes (about one per 100 words), fix only machine-flat rhythm and never manufacture sentence-length variance. Canonical rules: `linkedin-humanizer` V3.
 6. **Approval card.** Include thread preview (who said what in last 3 turns), the draft, reaction suggestion, and the parentComment URN we'll send.
-7. **On approval.** Call `lib.publish(kind="reply", draft_text=<approved>, target_url=<comment_url>, post_urn=<urn>, platform_id=<id>, parent_comment=<top_level_comment_urn>, reaction_type=<chosen>)`. The wrapper handles Publora / manual / diy routing.
+7. **On approval.** Put `post_urn`, `platform_id`, `parent_comment`, and `reaction_type` in one `action_context` dictionary. Issue `receipt = lib.issue_approval(kind="reply", draft_text=<approved>, target_url=<comment_url>, user_confirmation=<verbatim user reply>, action_context=action_context)`, then call `lib.publish(kind="reply", draft_text=<approved>, target_url=<comment_url>, approval=receipt, **action_context)`. Never issue a receipt before the user approves.
 
 ## The flattening gotcha
 

@@ -73,15 +73,11 @@ def main() -> int:
     scheduled_utc = when.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     print(f"→ {len(text)} chars, scheduled {when.isoformat()} (UTC {scheduled_utc})")
 
-    if args.dry_run:
-        print("(dry-run, nothing scheduled)")
-        return 0
-
     from dotenv import load_dotenv
 
     load_dotenv(ROOT / ".env")
 
-    from lib import active_backend, publish
+    from lib import active_backend, issue_approval, publish, render_approval_card
 
     backend = active_backend()
     if backend != "publora":
@@ -89,12 +85,40 @@ def main() -> int:
               f"and LINKEDIN_PLATFORM_ID in .env", file=sys.stderr)
         return 2
 
+    import os
+    platform_id = os.getenv("LINKEDIN_PLATFORM_ID")
+    context = {
+        "platforms": [platform_id],
+        "scheduled_time": scheduled_utc,
+    }
+    print(render_approval_card(
+        kind="post",
+        preview_text=text,
+        target_url="https://www.linkedin.com/post/new/",
+        extra_context={"platform": platform_id, "scheduled_time": scheduled_utc},
+    ))
+    if args.dry_run:
+        print("(dry-run, nothing scheduled)")
+        return 0
+    answer = input("Schedule this exact post? [yes/no]: ").strip().lower()
+    if answer not in {"yes", "y", "post", "publish", "approve", "approved"}:
+        print("Cancelled.")
+        return 0
+    approval = issue_approval(
+        kind="post",
+        draft_text=text,
+        target_url="https://www.linkedin.com/post/new/",
+        user_confirmation=answer,
+        action_context=context,
+    )
+
     try:
         resp = publish(
             "post",
             text,
-            "https://www.linkedin.com/feed/",
-            scheduled_time=scheduled_utc,
+            "https://www.linkedin.com/post/new/",
+            approval=approval,
+            **context,
         )
     except Exception as e:
         print(f"✗ publora schedule failed: {e}", file=sys.stderr)

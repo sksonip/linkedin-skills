@@ -12,7 +12,8 @@ The receipts:
 - **OpenAI shut down its own AI Text Classifier in July 2023** because it hit only **26% accuracy** on AI-written text. The company that builds the AI could not reliably detect the AI.
 - **Vanderbilt University disabled Turnitin's AI detection** citing false-positive risk to students. Other R1 schools followed.
 - **Newby v. Adelphi University (October 2025)**: a federal court ordered the university to expunge an AI-cheating violation from a student's record after the only "evidence" was a detector score.
-- **Sergey's team test**: same article, three detectors, scores **82% / 100% / 50%**. That is a 50-point spread on identical text.
+- Do not present unpublished upstream team tests as evidence. Use only results
+  produced during the current run or independently verifiable public studies.
 
 If accusations are coming, this skill produces the screenshot.
 
@@ -20,7 +21,8 @@ If accusations are coming, this skill produces the screenshot.
 
 - Someone accuses a post, essay, or proposal of being AI-written based on a single detector score
 - Before defending a writer publicly, get the spread on record
-- As a follow-up to Sergey's controversial detector post — paste any flagged text, run it, screenshot the divergence
+- As a follow-up to a detector-reliability discussion — paste any flagged text,
+  run it with the user's explicit consent, and report the observed divergence
 - Internal QA on Co.Actor drafts before publishing to high-stakes audiences
 
 ## Input

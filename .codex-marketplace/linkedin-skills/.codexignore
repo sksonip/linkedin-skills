@@ -1,7 +1,5 @@
 # Not needed at runtime by Codex
 testing/
-marketing/
-.playwright-mcp/
 .env
 *.pyc
 __pycache__/

@@ -30,7 +30,7 @@ Not for a blank-page draft (use `linkedin-post-writer`) and not for reviewing a 
 6. **Fix links and artifacts.** Move any external link to the first comment (in-body links suppress reach). Strip off-platform artifacts: hashtag walls, "link in bio", "smash subscribe", X @-handles, "as I tweeted" throat-clearing. 0 to 2 hashtags at the end.
 7. **Humanizer pass.** Run the scrub: 2026 AI vocab by density, em dashes above the cap (about one per 100 words), stacked rule-of-three triads, generic openers and reveal bridges. Keep the user's real numbers and named entities from the source.
 8. **Approval card.** Show: source -> LinkedIn mapping (what became what), formula used, char count, suggested posting window (Tue/Wed/Thu 7:30 to 9:00 AM local), the link-in-first-comment note.
-9. **On approval.** Publish via `lib.publish(kind="post", draft_text=<approved>, target_url="https://www.linkedin.com/post/new/", platforms=[{"platform":"linkedin","platformId":<id>}], scheduled_time=<iso_or_None>)`. The wrapper handles Publora / manual / diy routing.
+9. **On approval.** Put `platforms` and `scheduled_time` in one `action_context` dictionary. Issue `receipt = lib.issue_approval(kind="post", draft_text=<approved>, target_url="https://www.linkedin.com/post/new/", user_confirmation=<verbatim user reply>, action_context=action_context)`, then call `lib.publish(kind="post", draft_text=<approved>, target_url="https://www.linkedin.com/post/new/", approval=receipt, **action_context)`. Never issue a receipt before the user approves.
 
 ## Native-fit rules (source -> LinkedIn)
 

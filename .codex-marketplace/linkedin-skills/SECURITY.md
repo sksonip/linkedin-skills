@@ -18,8 +18,7 @@ mishandles credentials, or an unsafe command pattern), please report it
 privately:
 
 - **Preferred:** open a private report via
-  [GitHub Security Advisories](https://github.com/sergebulaev/linkedin-skills/security/advisories/new)
-- **Alternative:** email `s@bulaev.org` with subject `[SECURITY] linkedin-skills`
+  [GitHub Security Advisories](https://github.com/sksonip/linkedin-skills/security/advisories/new)
 
 Please include:
 
@@ -38,10 +37,14 @@ disclosure decision within 14 days.
 - Scripts in `lib/` and `scripts/` perform HTTP calls only to the Apify,
   Publora and Pixfaro APIs, and never build a command from remote content.
   One code path does execute a command: the optional Tier 2 "DIY" backend
-  runs whatever `LINKEDIN_SKILLS_CUSTOM_POSTER` names, via `subprocess`
-  with no shell. That variable is unset by default; anything able to write
-  it gains code execution on the next approved publish, so treat it as a
-  credential.
+  runs whatever `LINKEDIN_SKILLS_CUSTOM_POSTER` names, via `subprocess` with no
+  shell. It remains disabled unless `LINKEDIN_SKILLS_ENABLE_CUSTOM_POSTER=true`
+  is also set. Configuration loads only from the plugin-root `.env` or an
+  explicitly selected `LINKEDIN_SKILLS_ENV_FILE`; caller parent directories are
+  never searched. Treat both settings as security-sensitive.
+- Publora writes require a short-lived, one-use approval receipt bound to the
+  exact action type, content, target, and backend context. Direct low-level
+  Publora write methods reject calls outside that approval-bound wrapper.
 - Content fetched from LinkedIn through the Apify read layer is untrusted
   input to the agent. See `references/untrusted-content.md`.
 - Please do not test vulnerabilities against third-party services

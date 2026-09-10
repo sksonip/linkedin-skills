@@ -1,12 +1,107 @@
-"""Approval gate helpers.
-
-Every skill that posts to LinkedIn MUST present a draft to the user and wait
-for explicit approval before calling Publora. This file is a thin conventions
-layer, not runtime enforcement — skills should call `render_approval_card`
-to format the draft consistently and then stop until the user says go.
-"""
+"""Approval rendering and runtime enforcement for external write actions."""
 from __future__ import annotations
+import hashlib
+import hmac
+import json
+import secrets
+import time
+from dataclasses import dataclass
 from typing import Optional
+
+
+APPROVAL_TTL_SECONDS = 10 * 60
+_CONFIRMATIONS = {"yes", "y", "post", "publish", "approve", "approved"}
+_ACTIVE_APPROVALS: dict[str, tuple[str, float]] = {}
+
+
+class ApprovalError(PermissionError):
+    """Raised when an external write lacks a valid, exact approval receipt."""
+
+
+@dataclass(frozen=True)
+class ApprovalReceipt:
+    """Opaque, short-lived receipt bound to one exact external action."""
+
+    receipt_id: str
+    action_digest: str
+    expires_at: float
+
+
+def _digest_action(
+    *, kind: str, draft_text: str, target_url: str, action_context: Optional[dict]
+) -> str:
+    canonical = json.dumps(
+        {
+            "kind": kind,
+            "draft_text": draft_text,
+            "target_url": target_url,
+            "action_context": action_context or {},
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def issue_approval(
+    *,
+    kind: str,
+    draft_text: str,
+    target_url: str,
+    user_confirmation: str,
+    action_context: Optional[dict] = None,
+) -> ApprovalReceipt:
+    """Issue a one-use receipt after the user explicitly confirms a shown draft.
+
+    ``user_confirmation`` must be the user's verbatim confirmation from the
+    current interaction. The receipt is bound to the content, target, kind and
+    backend-relevant context, expires after ten minutes, and cannot be reused.
+    """
+    if user_confirmation.strip().lower() not in _CONFIRMATIONS:
+        raise ApprovalError("explicit user confirmation is required")
+    digest = _digest_action(
+        kind=kind,
+        draft_text=draft_text,
+        target_url=target_url,
+        action_context=action_context,
+    )
+    receipt_id = secrets.token_urlsafe(24)
+    expires_at = time.monotonic() + APPROVAL_TTL_SECONDS
+    _ACTIVE_APPROVALS[receipt_id] = (digest, expires_at)
+    return ApprovalReceipt(receipt_id, digest, expires_at)
+
+
+def consume_approval(
+    receipt: Optional[ApprovalReceipt],
+    *,
+    kind: str,
+    draft_text: str,
+    target_url: str,
+    action_context: Optional[dict] = None,
+) -> None:
+    """Validate and consume a receipt before an external write is attempted."""
+    if not isinstance(receipt, ApprovalReceipt):
+        raise ApprovalError("a valid approval receipt is required before publishing")
+    stored = _ACTIVE_APPROVALS.pop(receipt.receipt_id, None)
+    if stored is None:
+        raise ApprovalError("approval receipt is invalid or has already been used")
+    expected_digest, expires_at = stored
+    if time.monotonic() > expires_at:
+        raise ApprovalError("approval receipt has expired")
+    if receipt.expires_at != expires_at or not hmac.compare_digest(
+        receipt.action_digest, expected_digest
+    ):
+        raise ApprovalError("approval receipt has been altered")
+    actual_digest = _digest_action(
+        kind=kind,
+        draft_text=draft_text,
+        target_url=target_url,
+        action_context=action_context,
+    )
+    if not hmac.compare_digest(expected_digest, actual_digest):
+        raise ApprovalError("approved action does not match the requested publish action")
 
 
 def render_approval_card(

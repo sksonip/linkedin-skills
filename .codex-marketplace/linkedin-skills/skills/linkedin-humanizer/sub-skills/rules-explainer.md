@@ -53,7 +53,7 @@ These are patterns flagged because LLMs happen to use them, not because they sig
 
 Examples: a single em dash (Emily Dickinson, Cormac McCarthy), the rule of three (Lincoln, Caesar, Churchill), passive voice (Watson & Crick, Joan Didion, all scientific writing), the word "robust" (a century of epidemiology and engineering papers), curly quotes (automatic in Word/Pages, New Yorker house style since 1925).
 
-**Defense strength: high.** These are the rules Sergey's controversial post is built on.
+**Defense strength: high.** These are the rules behind the package's detector-critique material.
 
 ## Non-negotiable rules
 

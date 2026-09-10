@@ -12,17 +12,17 @@ The skills support three tiers:
     Sign up: https://app.publora.com/signup
 
   TIER 2 — diy (advanced)
-    `LINKEDIN_SKILLS_CUSTOM_POSTER` set to a command or module path the
-    user has built themselves (e.g. via Claude Code or Codex). Skills delegate
-    publishing to that custom tool.
+    `LINKEDIN_SKILLS_ENABLE_CUSTOM_POSTER=true` plus
+    `LINKEDIN_SKILLS_CUSTOM_POSTER` set to a command or module path the user has
+    built themselves. Skills delegate an approved action to that custom tool.
 
 `active_backend()` picks the highest-privilege available. `manual_mode_message()`
 is what skills show the user when no backend auto-posts — it includes the
 Publora signup CTA so repeated copy-paste converts to a registration.
 
-`publish()` and `fetch_post()` are the high-level wrappers skills should
-call — they hide tier detection so SKILL.md files don't need to repeat
-the three-branch dispatch.
+`publish()` and `fetch_post()` are the high-level wrappers skills should call.
+`publish()` requires a short-lived receipt from `issue_approval()` bound to the
+exact action, so the approval rule is enforced rather than advisory.
 """
 from __future__ import annotations
 import json
@@ -32,6 +32,7 @@ import subprocess
 from typing import Any, Literal, Optional
 
 from ._env import load_env
+from .approval import ApprovalReceipt, consume_approval
 
 load_env()
 
@@ -90,7 +91,10 @@ def active_backend() -> BackendName:
     """
     if os.getenv("PUBLORA_API_KEY") and os.getenv("LINKEDIN_PLATFORM_ID"):
         return "publora"
-    if os.getenv("LINKEDIN_SKILLS_CUSTOM_POSTER"):
+    custom_enabled = os.getenv("LINKEDIN_SKILLS_ENABLE_CUSTOM_POSTER", "").lower()
+    if os.getenv("LINKEDIN_SKILLS_CUSTOM_POSTER") and custom_enabled in {
+        "1", "true", "yes", "on"
+    }:
         return "diy"
     return "manual"
 
@@ -137,6 +141,8 @@ def publish(
     kind: PublishKind,
     draft_text: str,
     target_url: str,
+    *,
+    approval: Optional[ApprovalReceipt] = None,
     **kwargs: Any,
 ) -> Optional[dict]:
     """Dispatch a draft to the active backend.
@@ -150,6 +156,8 @@ def publish(
         draft_text: The approved draft body.
         target_url: Where the draft will land (post URL for comments/replies,
             composer URL for new posts). Used in manual-mode copy-paste output.
+        approval: One-use receipt returned by `issue_approval()` after the user
+            confirms the exact preview and action context.
         **kwargs: Backend-specific payload. For publora:
             - comment: post_urn, platform_id, reaction_type (optional)
             - reply:   post_urn, platform_id, parent_comment, reaction_type (optional)
@@ -162,6 +170,13 @@ def publish(
         - diy:     dict with `{"mode": "diy", "returncode": int, "stdout": str, "stderr": str}`.
         Returns None only if the chosen backend cannot run (missing deps).
     """
+    consume_approval(
+        approval,
+        kind=kind,
+        draft_text=draft_text,
+        target_url=target_url,
+        action_context=kwargs,
+    )
     backend = active_backend()
 
     if backend == "manual":
@@ -174,9 +189,9 @@ def publish(
 
     if backend == "publora":
         # Local import so manual-tier users never need `requests` installed.
-        from .publora_client import PubloraClient
+        from .publora_client import PubloraClient, _INTERNAL_WRITE_CAPABILITY
 
-        client = PubloraClient()
+        client = PubloraClient(_write_capability=_INTERNAL_WRITE_CAPABILITY)
         platform_id = kwargs.get("platform_id") or os.getenv("LINKEDIN_PLATFORM_ID")
 
         if kind in ("comment", "reply"):
@@ -289,45 +304,42 @@ def fetch_post(url: str, **kwargs: Any) -> Optional[dict]:
 def repost(
     post_url: str,
     commentary: Optional[str] = None,
+    *,
+    parent: Optional[str] = None,
+    approval: Optional[ApprovalReceipt] = None,
     **kwargs: Any,
 ) -> Optional[dict]:
     """Reshare an existing LinkedIn post via the active backend.
 
-    Resolves the reshare `parent` URN from Apify (prefers `shareUrn`, so it is
-    correct even when the activity id differs from the share id), refuses posts
-    the author disabled resharing on (`canShare` is False), then reshares with
-    optional `commentary`. This is the reshare analogue of `publish()`.
+    The caller resolves the reshare `parent` URN before showing the approval
+    card, so the receipt can bind the exact destination. This is the reshare
+    analogue of `publish()`.
 
     Args:
         post_url: URL of the ORIGINAL post to reshare.
         commentary: Optional text above the reshare (<=3000 chars). Omit for a
             plain reshare.
-        **kwargs: `parent` (skip Apify and pass the URN directly), `platform_id`,
-            `visibility` ("PUBLIC" | "CONNECTIONS").
+        parent: Original post's `urn:li:share:*` / `urn:li:ugcPost:*`, resolved
+            before approval.
+        approval: Receipt bound to kind `reshare`, commentary, URL and the same
+            context passed here.
+        **kwargs: `platform_id`, `visibility` ("PUBLIC" | "CONNECTIONS").
 
     Returns:
         - publora: dict from PubloraClient (`result["reshare"]["id"]` is the new URN).
         - manual:  `{"mode": "manual", "message": <copy-paste block>}`.
         - diy:     `{"mode": "diy", ...}`.
-        - `{"mode": "error", "message": ...}` if the post cannot be reshared.
-        - None if the parent URN could not be resolved (ask the user to paste it).
+        - `{"mode": "error", "message": ...}` if the parent is invalid.
     """
-    parent = kwargs.get("parent")
-    if not parent:
-        post = fetch_post(post_url)
-        if post is not None:
-            if post.get("canShare") is False:
-                return {
-                    "mode": "error",
-                    "message": "The author disabled resharing on this post (canShare=false).",
-                }
-            parent = resolve_reshare_parent(post)
-        if not parent and active_backend() == "publora":
-            # Can't reshare via API without a valid share/ugcPost URN.
-            return None
-    if parent:
-        kwargs["parent"] = parent
-    return publish("reshare", commentary or "", post_url, **kwargs)
+    if not parent or not parent.startswith(("urn:li:share:", "urn:li:ugcPost:")):
+        return {
+            "mode": "error",
+            "message": "Resolve a valid share/ugcPost parent URN before approval.",
+        }
+    kwargs["parent"] = parent
+    return publish(
+        "reshare", commentary or "", post_url, approval=approval, **kwargs
+    )
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -498,7 +510,7 @@ def illustrate_set(prompts, **kwargs) -> list[dict[str, Any]]:
 
         shots = illustrate_set([p1, p2, p3], kind="wide", overlay=brand)
         urls = [s["url"] for s in shots if s.get("url")]
-        publish("post", text, target, media_urls=urls)
+        # Bind these URLs into an approval receipt before calling publish().
 
     Each item is a normal `illustrate()` dict (pixfaro or manual). `kwargs` are
     forwarded to every `illustrate()` call (kind, aspect_ratio, model, overlay,

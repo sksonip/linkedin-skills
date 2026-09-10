@@ -8,13 +8,13 @@ Flow:
     1. Parse URL to URN
     2. Show preview
     3. Prompt "post? yes/no"
-    4. On yes: react first, pause 10s, post comment
+    4. On yes: issue an exact-action receipt, then react and post through the
+       approval-bound wrapper
 """
 from __future__ import annotations
 import argparse
 import os
 import sys
-import time
 from pathlib import Path
 
 # Make repo importable without install
@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-from lib import PubloraClient, parse_linkedin_url, render_approval_card
+from lib import issue_approval, parse_linkedin_url, publish, render_approval_card
 
 
 def main() -> int:
@@ -76,23 +76,26 @@ def main() -> int:
         print("Cancelled.")
         return 0
 
-    client = PubloraClient()
+    context = {
+        "post_urn": post_urn,
+        "platform_id": platform_id,
+        "parent_comment": parent_comment_urn,
+        "reaction_type": args.reaction,
+    }
+    approval = issue_approval(
+        kind="reply" if parent_comment_urn else "comment",
+        draft_text=args.message,
+        target_url=args.url,
+        user_confirmation=answer,
+        action_context=context,
+    )
     try:
-        client.create_reaction(
-            post_urn=post_urn, platform_id=platform_id, reaction_type=args.reaction
-        )
-        print(f"✓ reacted {args.reaction}")
-    except Exception as e:
-        print(f"⚠ reaction failed (non-fatal): {e}")
-
-    time.sleep(10)
-
-    try:
-        resp = client.create_comment(
-            post_urn=post_urn,
-            message=args.message,
-            platform_id=platform_id,
-            parent_comment=parent_comment_urn,
+        resp = publish(
+            "reply" if parent_comment_urn else "comment",
+            args.message,
+            args.url,
+            approval=approval,
+            **context,
         )
         print(f"✓ posted comment {resp.get('comment', {}).get('id', '?')}")
         return 0

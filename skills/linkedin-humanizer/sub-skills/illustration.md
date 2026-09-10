@@ -48,8 +48,9 @@ media. Runs on any agent (Claude Code, Codex, OpenClaw).
 4. **Model choice.** Default `nano-banana-2` (balanced, ~$0.08). The overlay
    handles text, so a cheap base model is fine. Only reach for `gemini-pro-image`
    when the user wants premium art. Never silently upgrade the tier.
-5. **Show + confirm.** Present the returned `url` and `cost`. On approval, attach
-   it when publishing: `publish("post", draft_text, target_url, media_urls=[r["url"]])`.
+5. **Show + confirm.** Present the returned `url` and `cost`. On approval, bind
+   `media_urls=[r["url"]]` into the approval receipt's `action_context`, then
+   pass that receipt and the identical context to `publish(...)`.
 6. **Manual mode.** If `r["backend"] == "manual"`, show `r["message"]` (the drafted
    prompt + aspect) and ask for a pasted URL to attach.
 
@@ -85,11 +86,16 @@ LinkedIn posts can carry up to 10 images in a grid layout (not a swipeable
 carousel, which the API does not support). Generate a set and attach them all:
 
 ```python
-from lib import illustrate_set, publish
+from lib import illustrate_set, issue_approval, publish
 shots = illustrate_set(["scene A prompt", "scene B prompt", "scene C prompt"],
                        kind="wide", overlay={"text": "@handle", "color": "#0A66C2"})
 urls = [s["url"] for s in shots if s.get("url")]
-publish("post", draft_text, target_url, media_urls=urls)
+context = {"media_urls": urls, "platforms": [platform_id]}
+receipt = issue_approval(kind="post", draft_text=draft_text,
+                         target_url=target_url,
+                         user_confirmation=user_reply,
+                         action_context=context)
+publish("post", draft_text, target_url, approval=receipt, **context)
 ```
 
 `illustrate_set` takes 2-10 prompts and returns a list of `illustrate()` results

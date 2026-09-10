@@ -99,8 +99,8 @@ Fifteen rules from the `linkedin-humanizer` package, sorted by what kind of evid
 
 ### Rule 10. Negative parallelism: "X isn't Y, it's Z"
 
-- **Tier:** strict (Sergey's hard ban)
-- **Why flagged:** "It's not a bug, it's a feature" / "It's not what you say, it's how you say it." LLMs over-deploy this because RLHF reward models favor it as quotable. The user has explicitly banned it as a personal pattern - too clean, too pat, no friction.
+- **Tier:** strict (voice-profile hard ban)
+- **Why flagged:** "It's not a bug, it's a feature" / "It's not what you say, it's how you say it." LLMs over-deploy this because RLHF reward models favor it as quotable. Treat it as banned only when the current voice profile says so: too clean, too pat, no friction.
 - **Famous human user:** every TED talk 2010-2020. Tony Robbins, Simon Sinek. The pattern is real human rhetoric, but the user rejected it.
 - **Defense strength:** medium in oratory, **zero in this voice** (hard ban).
 - **Citation:** Wikipedia "Signs of AI writing" under "negative parallelism"
@@ -200,5 +200,6 @@ Fifteen rules from the `linkedin-humanizer` package, sorted by what kind of evid
 ---
 
 **Last Updated:** 2026-04-25
-**Maintained By:** Claude Code and Codex, for Sergey Bulaev
+**Fork maintained by:** Satish Kumar Soni. Original upstream work is credited
+in the repository README, license, and inherited history.
 **Purpose:** Educational backbone for the controversial post arguing that AI-writing rules are forensic in some cases and aesthetic overreach in others.

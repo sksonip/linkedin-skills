@@ -32,11 +32,8 @@ except ImportError:
     print("ERROR: install requests first  ->  pip install requests", file=sys.stderr)
     sys.exit(1)
 
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass  # dotenv optional
+# Do not auto-load a caller-project .env. Live detector credentials must be
+# exported explicitly by the user before running this privacy-sensitive tool.
 
 
 # ---------------------------------------------------------------------------

@@ -91,7 +91,7 @@ Never: `linkedin.com/in/firstname-lastname-123abc456`
 
 ### Why it matters
 
-- **Memorable** — you can say "linkedin.com/in/sergebulaev" in conversation
+- **Memorable** — you can say "linkedin.com/in/firstnamelastname" in conversation
 - **SEO** — Google ranks canonical URLs higher than hash-tail URLs
 - **Email signatures** — the short URL reads as intentional, not default
 

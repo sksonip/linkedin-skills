@@ -5,18 +5,18 @@
 # LinkedIn Marketing Skills for Claude Code and Codex
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/sergebulaev/linkedin-skills?color=1E40AF&label=release" alt="Latest release">
+  <img src="https://img.shields.io/github/v/release/sksonip/linkedin-skills?color=1E40AF&label=release" alt="Latest release">
   <img src="https://img.shields.io/badge/Claude_Code-Compatible-D97757?logo=anthropic&logoColor=white" alt="Claude Code Compatible">
   <img src="https://img.shields.io/badge/Codex-Compatible-111827" alt="Codex Compatible">
   <img src="https://img.shields.io/badge/Claude-Skills-8A63D2" alt="Claude Skills">
   <img src="https://img.shields.io/badge/License-MIT-22C55E.svg" alt="MIT License">
-  <img src="https://img.shields.io/github/stars/sergebulaev/linkedin-skills?style=social" alt="GitHub stars">
+  <img src="https://img.shields.io/github/stars/sksonip/linkedin-skills?style=social" alt="GitHub stars">
   <img src="https://img.shields.io/badge/PRs-welcome-F59E0B.svg" alt="PRs Welcome">
 </p>
 
 **Claude skills for LinkedIn.** 11 Claude Code and Codex skills that write LinkedIn posts, comments, and replies in your voice. They draft content, strip AI tells, and wait for your approval before anything gets published. No coding required.
 
-> **On another platform too?** The same team ships matching marketing skill bundles for [X (Twitter)](https://github.com/sergebulaev/x-skills) · [Instagram](https://github.com/sergebulaev/instagram-skills) · [YouTube](https://github.com/sergebulaev/youtube-skills) · [TikTok](https://github.com/sergebulaev/tiktok-skills) · [Threads](https://github.com/sergebulaev/threads-skills) · [Facebook](https://github.com/sergebulaev/facebook-skills). Same voice engine, same approve-before-publish flow.
+> **On another platform too?** The original upstream ecosystem includes matching bundles for [X (Twitter)](https://github.com/sergebulaev/x-skills) · [Instagram](https://github.com/sergebulaev/instagram-skills) · [YouTube](https://github.com/sergebulaev/youtube-skills) · [TikTok](https://github.com/sergebulaev/tiktok-skills) · [Threads](https://github.com/sergebulaev/threads-skills) · [Facebook](https://github.com/sergebulaev/facebook-skills). These links are provided for provenance and do not imply that this fork maintains those repositories.
 
 ## Install
 
@@ -25,14 +25,14 @@ Pick whichever way you use Claude Code or Codex:
 ### Codex CLI
 
 ```bash
-codex plugin marketplace add sergebulaev/linkedin-skills
+codex plugin marketplace add sksonip/linkedin-skills
 codex plugin add linkedin-skills@linkedin-skills
 ```
 
 To test a local clone before publishing changes:
 
 ```bash
-git clone https://github.com/sergebulaev/linkedin-skills.git
+git clone https://github.com/sksonip/linkedin-skills.git
 cd linkedin-skills
 codex plugin marketplace add .
 codex plugin add linkedin-skills@linkedin-skills
@@ -43,7 +43,7 @@ codex plugin add linkedin-skills@linkedin-skills
 1. Open https://claude.ai/code
 2. Go to **Skills** in the sidebar
 3. Click **Add from GitHub**
-4. Paste: `sergebulaev/linkedin-skills`
+4. Paste: `sksonip/linkedin-skills`
 5. Done. The skills activate automatically when you ask about LinkedIn.
 
 ### Claude Desktop (Mac / Windows)
@@ -51,7 +51,7 @@ codex plugin add linkedin-skills@linkedin-skills
 1. Open Claude Desktop
 2. Click **Customize**
 3. Click the **+** next to **Personal plugins** → **Create plugin** → **Add marketplace**
-4. Choose **Add from a repository** and paste: `sergebulaev/linkedin-skills`
+4. Choose **Add from a repository** and paste: `sksonip/linkedin-skills`
 5. Install the plugin
 6. Done. Start a new conversation and ask Claude to write a LinkedIn post.
 
@@ -60,7 +60,7 @@ codex plugin add linkedin-skills@linkedin-skills
 1. Open your OpenClaw working directory
 2. Clone the skills into it:
    ```bash
-   git clone https://github.com/sergebulaev/linkedin-skills.git
+   git clone https://github.com/sksonip/linkedin-skills.git
    ```
 3. In OpenClaw settings, add this to your system prompt:
    ```
@@ -68,21 +68,21 @@ codex plugin add linkedin-skills@linkedin-skills
    For any LinkedIn task, read the relevant skills/*/SKILL.md first.
    Use lib/url_parser.py for URL parsing,
        lib/apify_client.py for reading posts / comments / engagers,
-       lib/publora_client.py for publishing actions.
+       lib.issue_approval + lib.publish for publishing actions.
    ```
 4. Done. Ask OpenClaw to write a LinkedIn post or comment.
 
 ### Claude Code (CLI / VS Code / JetBrains)
 
 ```
-/plugin marketplace add sergebulaev/linkedin-skills
+/plugin marketplace add sksonip/linkedin-skills
 /plugin install linkedin-skills@linkedin-skills
 ```
 
 Or clone the repo and open it as your working directory:
 
 ```bash
-git clone https://github.com/sergebulaev/linkedin-skills.git
+git clone https://github.com/sksonip/linkedin-skills.git
 cd linkedin-skills
 ```
 
@@ -91,7 +91,7 @@ cd linkedin-skills
 Hermes Agent (Nous Research) follows the agentskills.io open standard and loads `skills/*/SKILL.md` directly. Clone the bundle into your Hermes skills folder:
 
 ```bash
-git clone https://github.com/sergebulaev/linkedin-skills.git ~/.hermes/skills/linkedin-skills
+git clone https://github.com/sksonip/linkedin-skills.git ~/.hermes/skills/linkedin-skills
 ```
 
 Coming from OpenClaw? `hermes claw migrate` imports these skills automatically. Then call `/<skill-name>` from any of your Hermes chat surfaces.
@@ -101,10 +101,10 @@ Coming from OpenClaw? `hermes claw migrate` imports these skills automatically. 
 One command that works across Claude Code, Codex, Cursor, and any other agent that reads SKILL.md files:
 
 ```bash
-npx skills add sergebulaev/linkedin-skills
+npx skills add sksonip/linkedin-skills
 ```
 
-> **Found this useful? [Star the repo](https://github.com/sergebulaev/linkedin-skills).** Curated Claude Code and Codex directories rank and gate by star count, so a star is what makes these skills findable for the next person. It is the only thing we ask. No signup, no email.
+> **Found this useful? [Star the repo](https://github.com/sksonip/linkedin-skills).** Curated Claude Code and Codex directories rank and gate by star count, so a star helps other people find this maintained fork.
 
 ## What you can do
 
@@ -285,7 +285,7 @@ linkedin-skills/
 | Runtime | Auto-discovers skills? | Setup |
 |---|---|---|
 | **Claude Code** (CLI, Desktop, Web, IDE) | Yes | Install via plugin or clone. Skills activate on matching prompts. |
-| **Codex CLI** | Yes | Install via `codex plugin marketplace add sergebulaev/linkedin-skills` and `codex plugin add linkedin-skills@linkedin-skills`. |
+| **Codex CLI** | Yes | Install via `codex plugin marketplace add sksonip/linkedin-skills` and `codex plugin add linkedin-skills@linkedin-skills`. |
 | **Anthropic Managed Agents** (`/v1/agents`) | Yes | Pass skill files in the agent context. |
 | **OpenClaw** | Manual | Mount the repo, add system prompt pointing to `skills/*/SKILL.md`. |
 | **Cursor / Cline / Aider** | Manual | Read `SKILL.md` files as prompt context; import `lib/` as Python. |
@@ -295,21 +295,21 @@ linkedin-skills/
 ### OpenClaw quickstart
 
 ```bash
-git clone git@github.com:sergebulaev/linkedin-skills.git
+git clone git@github.com:sksonip/linkedin-skills.git
 
 # Add to OpenClaw system prompt:
 # "You have LinkedIn marketing skills in ./linkedin-skills/.
 #  Read the relevant skills/*/SKILL.md before any LinkedIn task.
 #  Use lib/url_parser.py for URL parsing,
 #      lib/apify_client.py for reading posts / comments / engagers,
-#      lib/publora_client.py for publishing."
+#      lib.publish for approval-bound publishing."
 ```
 
 ### Generic Python agent quickstart
 
 ```python
 import sys; sys.path.insert(0, "path/to/linkedin-skills")
-from lib import parse_linkedin_url, PubloraClient, ApifyClient
+from lib import ApifyClient, issue_approval, parse_linkedin_url, publish
 
 parsed = parse_linkedin_url("https://www.linkedin.com/posts/slug-activity-7448808898326654978-iW20")
 print(parsed["post_urn"])  # urn:li:activity:7448808898326654978
@@ -319,9 +319,17 @@ apify = ApifyClient()  # reads APIFY_TOKEN from env
 post = apify.fetch_post(post_url="https://www.linkedin.com/posts/...")
 engagers = apify.fetch_post_engagers(post_url="https://www.linkedin.com/posts/...", max_items=50)
 
-# Write side (Publora)
-client = PubloraClient()  # reads PUBLORA_API_KEY from env
-client.create_comment(post_urn=parsed["post_urn"], message="draft", platform_id="linkedin-xxx")
+# Write side (Publora): issue only after the user confirms the shown draft.
+context = {"post_urn": parsed["post_urn"], "platform_id": "linkedin-xxx"}
+receipt = issue_approval(
+    kind="comment",
+    draft_text="draft",
+    target_url="https://www.linkedin.com/posts/...",
+    user_confirmation="yes",  # the user's verbatim reply
+    action_context=context,
+)
+publish("comment", "draft", "https://www.linkedin.com/posts/...",
+        approval=receipt, **context)
 
 # Image side (Pixfaro) — optional, reads PIXFARO_TOKEN from env
 from lib import illustrate
@@ -362,21 +370,23 @@ python lib/url_parser.py "https://www.linkedin.com/posts/<author-handle>_activit
 
 ## Who builds this
 
-These skills come out of [Creative Content Crafts](https://cccrafts.ai), an engineering company. We build the machinery underneath a company's public voice: ICP parsing, engagement systems, content guardrails, and posting infrastructure. We do not sell the words themselves.
+This fork is maintained by [Satish Kumar Soni](https://github.com/sksonip). It
+was originally created by [Sergey Bulaev](https://github.com/sergebulaev) and
+Creative Content Crafts; the inherited commit history and MIT license preserve
+that upstream attribution.
 
-We call that layer **content engineering**. Writing collapsed to the price of a chat subscription. What stayed valuable is everything below it: pulling every post your market wrote this week, keeping a live list of the people who matter, engaging on it daily with judgment in the loop, and catching the risky drafts before the platform does.
-
-On LinkedIn specifically, that is the whole job. We are engineers of LinkedIn growth, not a ghostwriting agency.
-
-This repo is the thin top layer of that stack, open-sourced. The engine underneath is what we build for clients.
+The upstream project describes Creative Content Crafts as an engineering
+company focused on ICP parsing, engagement systems, content guardrails, and
+posting infrastructure. That description is retained as provenance, not as a
+claim that this fork is operated by or represents the upstream company.
 
 ## License
 
-MIT. Powered by [Publora](https://publora.com).
+MIT. Optional publishing integration powered by [Publora](https://publora.com).
 
 ## Related open-source skill bundles
 
-Part of a family of AI social-media marketing skill bundles for Claude Code and Codex:
+Related bundles from the original upstream ecosystem:
 
 - **linkedin-skills - LinkedIn (this repo)**
 - [x-skills](https://github.com/sergebulaev/x-skills) - X (Twitter)

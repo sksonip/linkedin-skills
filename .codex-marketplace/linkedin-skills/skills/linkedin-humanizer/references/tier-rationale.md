@@ -48,7 +48,9 @@ Corporate-speak. Bad LinkedIn style regardless of who wrote it. AI uses these be
 - **Grammar markers (nominalisations, "-ing" clause openers)**: "Leveraging our data, we..." runs at 5.3x the human rate. Readers feel the register shift even when they cannot name it.
 - **fundamentally / essentially / ultimately**: filler adverbs that add no information. Strunk & White flagged these in 1918. They were bad style before AI existed.
 - **"in today's fast-paced world"** and the reveal bridges ("The result?", "Here's what", "Stop X, start Y"): openers and pivots that LinkedIn measurably down-ranks (-4.3% to -6.7% reach, vendor data). Removing them improves reach regardless of who wrote them.
-- **Negative parallelism ("X isn't Y, it's Z")**: per Sergey's 2026-04-27 hard ban, now backed by -4.9% reach data. Used by JFK historically, but in 2026 LinkedIn context it reads as ChatGPT in 90% of cases.
+- **Negative parallelism ("X isn't Y, it's Z")**: treat this as a hard ban
+  only when the current voice profile requires it. It has a long human
+  rhetorical history, but repeated use can read as templated LinkedIn copy.
 - **Stacked or perfectly parallel triads, and any third triad in a post**: tricolon at 2x expert-human density in 2026 models. The form is innocent; the density and the interchangeable items are the tell. One natural triad stays.
 - **Staccato stacks and reveal bridges** ("Short. Punchy. Done.", "No X. No Y. Just Z.", one-word paragraphs): the top 2026 reader-cited tell, and the signature of every prompt-style humanizer. V2 used to add these. V3 removes them.
 

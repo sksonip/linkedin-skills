@@ -34,11 +34,11 @@ otherwise.
 
 ## Commits
 
-- Primary author **must** be Sergey: every `git commit` needs
-  `--author="Sergey Bulaev <s@bulaev.org>"`. The harness defaults to the
-  Claude identity if you forget; verify with
-  `git log -1 --format='%an <%ae>'` before pushing.
-- Co-author trailer (`Co-Authored-By: Claude ...`) is fine and welcomed.
+- Use the actual contributor's configured Git identity. Never override
+  `--author` to impersonate the upstream maintainer or another contributor.
+- Preserve upstream credit in the license, acknowledgments, and inherited
+  history. Co-author trailers are fine only when they truthfully describe the
+  contribution.
 - Verify locally before push: build never breaks, no broken refs in
   `SKILL.md`, library smoke import passes.
 
@@ -87,9 +87,11 @@ otherwise.
   `force_refresh=True`). Skills should call these or the
   `lib.fetch_post(url)` wrapper that handles the APIFY_TOKEN-or-paste
   fallback.
-- **Write layer (Publora):** `lib/publora_client.py`. Skills should call
-  `lib.publish(kind, draft_text, target_url, ...)` (kinds: comment / reply /
-  post / reshare) or the `lib.repost(post_url, commentary=None)` convenience
+- **Write layer (Publora):** `lib/publora_client.py`. After the user approves,
+  skills must call `lib.issue_approval(...)` with the exact action and then
+  `lib.publish(kind, draft_text, target_url, approval=receipt, ...)` (kinds: comment / reply /
+  post / reshare) or the approval-bound `lib.repost(post_url,
+  commentary=None, parent=..., approval=receipt)` convenience
   wrapper, rather than inline the publora / manual / diy dispatch. Real endpoint
   paths: `POST /create-post`, `POST /linkedin-comments`,
   `DELETE /linkedin-comments`, `POST /linkedin-reactions`,
@@ -103,6 +105,10 @@ otherwise.
   `DELETE /delete-post/<postGroupId>`. Also `post-logs`, `test-connection`,
   `platform-limits` and `webhooks`. Prefer editing a scheduled post over
   delete-and-recreate.
+- **Configuration boundary:** the library loads only the plugin-root `.env` or
+  an explicitly selected `LINKEDIN_SKILLS_ENV_FILE`; never search the caller's
+  directory tree. The DIY command backend also requires
+  `LINKEDIN_SKILLS_ENABLE_CUSTOM_POSTER=true`.
 - **Image layer (Pixfaro):** `lib/pixfaro_client.py`. Skills should call
   `lib.illustrate(prompt, kind=...)` / `lib.refine(image_id, instruction)`
   (or `lib.available_models()`), not the client directly. Endpoints:

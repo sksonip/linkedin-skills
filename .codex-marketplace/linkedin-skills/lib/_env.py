@@ -1,35 +1,34 @@
-"""Internal helper to load .env when python-dotenv is available."""
+"""Load configuration from the plugin's own .env file only."""
 from __future__ import annotations
 
+import os
 from pathlib import Path
+from typing import Optional
 
 _ENV_LOADED = False
 
 
-def load_env(force: bool = False) -> None:
-    """Load environment variables from .env if python-dotenv is installed.
+def load_env(force: bool = False, env_path: Optional[Path] = None) -> None:
+    """Load environment variables from one trusted, explicit location.
 
     Safe no-op if python-dotenv is missing, preserving Tier 0 (manual)
-    zero-dependency operation. Searches upwards from the current working
-    directory and checks the repository root. Existing environment variables
-    are preserved.
+    zero-dependency operation. By default only the repository/plugin root is
+    considered. Set ``LINKEDIN_SKILLS_ENV_FILE`` or pass ``env_path`` to use a
+    different file deliberately. The caller's working directory is never
+    searched, and existing process environment variables are preserved.
     """
     global _ENV_LOADED
     if _ENV_LOADED and not force:
         return
 
     try:
-        from dotenv import find_dotenv, load_dotenv
+        from dotenv import load_dotenv
 
-        # 1. Search upwards from cwd (for plugin users working in project directories)
-        dotenv_path = find_dotenv(usecwd=True)
-        if dotenv_path:
-            load_dotenv(dotenv_path)
-
-        # 2. Check repo root relative to this file
-        repo_env = Path(__file__).resolve().parents[1] / ".env"
-        if repo_env.is_file():
-            load_dotenv(repo_env)
+        configured = os.getenv("LINKEDIN_SKILLS_ENV_FILE")
+        selected = Path(configured).expanduser() if configured else env_path
+        selected = selected or (Path(__file__).resolve().parents[1] / ".env")
+        if selected.is_file():
+            load_dotenv(selected, override=False)
     except ImportError:
         pass
 

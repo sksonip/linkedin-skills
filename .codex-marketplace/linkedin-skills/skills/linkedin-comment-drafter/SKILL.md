@@ -38,7 +38,7 @@ Then waits for user approval. On "post", calls Publora to react + comment.
 4. **Draft comment variants.** Pick 2-3 templates from `references/comment-templates.md` that fit the post's topic. Fill them with user-voice phrasing.
 5. **Run the humanizer pass.** Scrub 2026 AI vocab by paragraph density, cap em dashes (about one per 100 words, never swap one for a period), fix only machine-flat rhythm without manufacturing variance, and add an odd-precision number with a named referent if missing. Canonical rules: `linkedin-humanizer` V3.
 6. **Present drafts for approval** using `lib.approval.render_approval_card`. Include: target URL, each variant, reaction suggestion, a one-line "why this template fits".
-7. **On approval.** Call `lib.publish(kind="comment", draft_text=<approved>, target_url=<post_url>, post_urn=<urn>, platform_id=<id>, reaction_type=<chosen>)`. The wrapper handles Publora / manual / diy routing.
+7. **On approval.** Put `post_urn`, `platform_id`, and `reaction_type` in one `action_context` dictionary. Issue `receipt = lib.issue_approval(kind="comment", draft_text=<approved>, target_url=<post_url>, user_confirmation=<verbatim user reply>, action_context=action_context)`, then call `lib.publish(kind="comment", draft_text=<approved>, target_url=<post_url>, approval=receipt, **action_context)`. Never issue a receipt before the user approves.
 
 ## Reshare mode (repost with your thoughts)
 
@@ -57,11 +57,12 @@ this when the ask is "repost", "reshare", or "share this with my network".
    just wants to amplify.
 3. **Present for approval** with the original post URL and the drafted commentary
    (or "plain reshare, no commentary").
-4. **On approval.** Call `lib.repost(post_url, commentary=<approved or None>)`.
-   The wrapper resolves the correct `shareUrn` from Apify (do not hand-convert an
-   `activity` id, the share id can differ), refuses posts with resharing off, and
-   routes Publora / manual / diy. Manual tier returns copy-paste steps ("Repost
-   with your thoughts"). The new reshare URN is `result["reshare"]["id"]`.
+4. **On approval.** Resolve the correct `shareUrn` before showing the final
+   approval card and put it in `action_context` as `parent` (do not hand-convert
+   an activity id; the share id can differ). Issue a receipt for kind `reshare`,
+   the exact commentary (or an empty string), target URL, and context, then call
+   `lib.publish(..., approval=receipt, **action_context)`. Never issue a receipt
+   before approval.
 
 Commentary cap is 3000 chars (LinkedIn), but a tight one or two sentences
 outperforms a wall of text. This is the tool `linkedin-employee-advocacy` uses

@@ -43,9 +43,9 @@ Five primary detectors plus optional extras. Each entry covers: API endpoint, au
 **Known issues:**
 - Marketed as "99% accurate" but multiple independent tests put real-world accuracy in the 60-80% range.
 - Aggressively flags any text that has been edited by Grammarly or similar tools, since editing patterns mimic LLM patterns.
-- Sergey's team meeting test (2026): scored a hand-written article **100% AI** while GPTZero scored the same article 82% and ZeroGPT scored 50%. 50-point spread on identical text.
-
-**Citation**: Internal CCC team test, March 2026 meeting transcript (`projects/coactor/transcripts/`); also referenced in Sergey Bulaev's April 2026 LinkedIn post on detector unreliability.
+Treat vendor accuracy claims cautiously and validate them against public,
+reproducible benchmarks. This repository does not rely on unpublished upstream
+team tests as evidence.
 
 ---
 
@@ -122,5 +122,4 @@ Reference: OpenAI blog, "New AI classifier for indicating AI-written text" (Jan 
 - **61.3%** — TOEFL essays by ESL writers misclassified as AI by 7 detectors (Stanford 2023)
 - **5.1%** — same detectors' false positive rate on US 8th-grade essays (Stanford 2023)
 - **26%** — OpenAI's own classifier accuracy before shutdown (July 2023)
-- **50 points** — spread observed on a single article in CCC team testing (2026)
 - **0** — number of US courts that have upheld a "detector said so" finding without corroborating evidence as of April 2026

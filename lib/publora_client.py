@@ -13,10 +13,9 @@ must be done in the Publora dashboard.
 
 Auth header: x-publora-key: sk_...
 
-Design note: this client is deliberately minimal. Skills call exactly one
-method per action, after the user has approved a draft rendered via
-`lib/approval.py`. All write methods retry on transient 408/429/5xx via the
-shared retry decorator.
+Design note: this client is deliberately minimal. Direct low-level write calls
+are rejected; skills must use the approval-bound `lib.publish()` wrapper. All
+write methods retry on transient 408/429/5xx via the shared retry decorator.
 """
 from __future__ import annotations
 import os
@@ -34,6 +33,7 @@ class PubloraError(RuntimeError):
 
 
 RETRYABLE_STATUSES = {408, 429, 500, 502, 503, 504}
+_INTERNAL_WRITE_CAPABILITY = object()
 
 
 def _retry(attempts: int = 3, base_delay: float = 0.6):
@@ -68,7 +68,13 @@ def _retry(attempts: int = 3, base_delay: float = 0.6):
 class PubloraClient:
     BASE_URL = "https://api.publora.com/api/v1"
 
-    def __init__(self, api_key: Optional[str] = None, timeout: float = 30.0):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        timeout: float = 30.0,
+        *,
+        _write_capability: object = None,
+    ):
         load_env()
         self.api_key = api_key or os.getenv("PUBLORA_API_KEY")
 
@@ -77,6 +83,7 @@ class PubloraClient:
                 "PUBLORA_API_KEY not set. Export it or pass api_key= explicitly."
             )
         self.timeout = timeout
+        self._write_capability = _write_capability
         self._session = requests.Session()
         self._session.headers.update(
             {
@@ -84,6 +91,13 @@ class PubloraClient:
                 "Content-Type": "application/json",
             }
         )
+
+    def _require_authorized_wrapper(self) -> None:
+        if self._write_capability is not _INTERNAL_WRITE_CAPABILITY:
+            raise PubloraError(
+                "direct write methods are disabled; use lib.issue_approval() "
+                "and lib.publish() so the action is approval-bound"
+            )
 
     # ---- LinkedIn comments ------------------------------------------------
 
@@ -108,6 +122,7 @@ class PubloraClient:
         Returns:
             Publora response dict with `comment.id`, `comment.commentUrn`, etc.
         """
+        self._require_authorized_wrapper()
         if len(message) > 1250:
             raise PubloraError("message exceeds 1,250 char LinkedIn limit")
         payload = {
@@ -126,6 +141,7 @@ class PubloraClient:
         comment_id: str,
         platform_id: str,
     ) -> dict[str, Any]:
+        self._require_authorized_wrapper()
         r = self._session.delete(
             self.BASE_URL + "/linkedin-comments",
             json={
@@ -157,6 +173,7 @@ class PubloraClient:
         platform_id: str,
         reaction_type: str = "LIKE",
     ) -> dict[str, Any]:
+        self._require_authorized_wrapper()
         rtype = self.REACTION_ALIASES.get(reaction_type.upper(), reaction_type.upper())
         return self._post(
             "/linkedin-reactions",
@@ -186,6 +203,7 @@ class PubloraClient:
         are normalized to their "platformId" here. `scheduled_time` is ISO 8601
         (UTC); if None, the post is created as a draft.
         """
+        self._require_authorized_wrapper()
         norm_platforms = [
             p if isinstance(p, str) else (p.get("platformId") or p.get("platform"))
             for p in platforms
@@ -223,6 +241,7 @@ class PubloraClient:
         `PUBLIC` or `CONNECTIONS`. The endpoint returns HTTP 201; the new reshare
         URN is `result["reshare"]["id"]`.
         """
+        self._require_authorized_wrapper()
         payload: dict[str, Any] = {
             "platformId": platform_id,
             "parent": parent,

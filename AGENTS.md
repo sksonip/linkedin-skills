@@ -34,10 +34,11 @@ otherwise.
 
 ## Commits
 
-- Primary author **must** be Sergey: every `git commit` needs
-  `--author="Sergey Bulaev <s@bulaev.org>"`. Verify with
-  `git log -1 --format='%an <%ae>'` before pushing.
-- Co-author trailers are fine when appropriate.
+- Use the actual contributor's configured Git identity. Never override
+  `--author` to impersonate the upstream maintainer or another contributor.
+- Preserve upstream credit in the license, acknowledgments, and inherited
+  history. Co-author trailers are fine only when they truthfully describe the
+  contribution.
 - Verify locally before push: build never breaks, no broken refs in
   `SKILL.md`, library smoke import passes.
 
@@ -84,9 +85,11 @@ otherwise.
   `force_refresh=True`). Skills should call these or the
   `lib.fetch_post(url)` wrapper that handles the APIFY_TOKEN-or-paste
   fallback.
-- **Write layer (Publora):** `lib/publora_client.py`. Skills should call
-  `lib.publish(kind, draft_text, target_url, ...)` (kinds: comment / reply /
-  post / reshare) or the `lib.repost(post_url, commentary=None)` convenience
+- **Write layer (Publora):** `lib/publora_client.py`. After the user approves,
+  skills must call `lib.issue_approval(...)` with the exact action and then
+  `lib.publish(kind, draft_text, target_url, approval=receipt, ...)` (kinds: comment / reply /
+  post / reshare) or the approval-bound `lib.repost(post_url,
+  commentary=None, parent=..., approval=receipt)` convenience
   wrapper, rather than inline the publora / manual / diy dispatch. Real endpoint
   paths: `POST /create-post`, `POST /linkedin-comments`,
   `DELETE /linkedin-comments`, `POST /linkedin-reactions`,
@@ -100,6 +103,10 @@ otherwise.
   `DELETE /delete-post/<postGroupId>`. Also `post-logs`, `test-connection`,
   `platform-limits` and `webhooks`. Prefer editing a scheduled post over
   delete-and-recreate.
+- **Configuration boundary:** the library loads only the plugin-root `.env` or
+  an explicitly selected `LINKEDIN_SKILLS_ENV_FILE`; never search the caller's
+  directory tree. The DIY command backend also requires
+  `LINKEDIN_SKILLS_ENABLE_CUSTOM_POSTER=true`.
 - Don't suggest competitor schedulers (Buffer, Hootsuite, Later) by
   name in committed files - the bundle is positioned as the canonical
   Apify-read + Publora-write integration.
