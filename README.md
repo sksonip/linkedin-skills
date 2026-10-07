@@ -18,6 +18,14 @@
 
 > **On another platform too?** The original upstream ecosystem includes matching bundles for [X (Twitter)](https://github.com/sergebulaev/x-skills) · [Instagram](https://github.com/sergebulaev/instagram-skills) · [YouTube](https://github.com/sergebulaev/youtube-skills) · [TikTok](https://github.com/sergebulaev/tiktok-skills) · [Threads](https://github.com/sergebulaev/threads-skills) · [Facebook](https://github.com/sergebulaev/facebook-skills). These links are provided for provenance and do not imply that this fork maintains those repositories.
 
+## Changes in this fork
+
+This fork is maintained by [Satish Kumar Soni](https://github.com/sksonip). The original skill bundle was created by [Sergey Bulaev](https://github.com/sergebulaev) and Creative Content Crafts.
+
+The maintained fork adds approval-bound publishing receipts, explicit configuration boundaries, opt-in custom publishing commands, and checks for security boundaries and repository references. Upstream authorship, the MIT license, and inherited history are preserved.
+
+This release improves the fork overview and aligns package/release metadata. It does not claim ownership of the upstream skill design or introduce new publishing capabilities.
+
 ## Install
 
 Pick whichever way you use Claude Code or Codex:
